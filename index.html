@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #2b2b2b;
+        }
+        #map {
+            height: 500px;
+            margin-top: -8px;
+            margin-left: -8px;
+            margin-right: -8px;
+            z-index: 10;
+        }
+        #locationSwitcher {
+            position: fixed;
+            margin: 25px;
+            width: 140px;
+            height: 40px;
+            top: 0;
+            left: 0;
+            z-index: 20;
+        }
+        .switcher {
+            display: inline-block;
+            color: #fff;
+            line-height: 40px;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+        .switcher:last-child {
+            border-left: 1px solid #fff;
+        }
+        #overlay {
+            position: fixed;
+            top: -100%;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            background-size: cover;
+            background-position: center;
+            -webkit-transition: top .5s linear; /* Firefox */
+            -moz-transition: top .5s linear; /* WebKit */
+            -o-transition: top .5s linear; /* Opera */
+            transition: top .5s linear; /* Standard */
+        }
+        .show-overlay {
+            top: 0 !important;
+            left: 0 !important;
+        }
+        #closeOverlay {
+            position: absolute;
+            right: 0;
+            font-size: 20px;
+            padding: 8px 14px;
+            background-color: #2b2b2b;
+            color: #fff;
+            opacity: .7;
+            cursor: pointer;
+        }
+        .vendor-view {
+            position: absolute;
+            right: 0;
+            top: 35%;
+            background-color: rgba(255, 255, 255, .5);
+            padding: 10px 2%;
+        }
+        .vendor-view > h2 {
+            text-transform: uppercase;
+            margin: 0;
+            font-size: 35px;
+        }
+        .vendor-view > img {
+            padding: 5px;
+            vertical-align: middle;
+        }
+
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="locationSwitcher">
+        <div class="switcher" data-lat="52.501161" data-lon="13.421166" data-zoom="13">
+            Berlin
+        </div>
+        <div class="switcher" data-lat="50.934515" data-lon="6.956163" data-zoom="14">
+            K&ouml;ln
+        </div>
+    </div>
+    <div id="overlay">
+        <figure id="closeOverlay">
+        x
+        </figure>
+        <div class="vendor-view kreuzberg">
+            <h2>Kreuzberg</h2>
+            <a href="https://www.overkillshop.com/de/sneaker.html"><img src="./vendors/overkill.png" height="50" width="170"/></a>
+            <a href="http://www.downstairs.com/"><img src="./vendors/aggro.jpg"/></a>
+            <a href="https://www.overkillshop.com/de/"><img src="./vendors/overkill-girls.jpg"/></a>
+        </div>
+        <div class="vendor-view hakischer">
+            <h2>Hakischer Markt</h2>
+            <a href="https://www.vooberlin.com/women?gclid=Cj0KEQjwyozABRDtgPTM0taCrKsBEiQATk6xDou4cMiUHANZQYiIEKp_xy5X1LiypHVaG7uK9CLo6FUaAkLp8P8HAQ"><img src="./vendors/voostore.jpg"/></a>
+            <a href="http://www.asics.com/de/de-de/"><img src="./vendors/asics.jpg"/></a>
+            <a href="www.timberland.de"><img src="./vendors/timerbalnd.jpg"/></a>
+            <a href="https://www.berlin.de/restaurants/adressen/italienisches-restaurant/maedchenitaliener-0d1ab041fbae2cc0a7f4503ae9762c40.html"><img src="./vendors/lunch.jpg"/></a>
+        </div>
+        <div class="vendor-view kdw-damm">
+            <h2>Kurf&uuml;rstendamm</h2>
+            <a href="www.kadewe.de"><img src="./vendors/kadewe.jpg"/></a>
+            <a href="www.leiser.de"><img src="./vendors/leiser.jpg"/></a><br/>
+            <a href="https://www.goertz.de/"><img src="./vendors/goertz.jpg"/></a>
+            <a href="www.solebox.com/"><img src="./vendors/solebox.jpg"/></a><br/>
+            <a href="www.adidas.de"><img src="./vendors/adidas.jpg"/></a>
+            <a href="www.nike.com"><img src="./vendors/nike.jpg"/></a>
+        </div>
+        <div class="vendor-view ehren-store">
+            <h2>Ehrenstrasse</h2>
+            <a href="www.geox.de"><img src="./vendors/geox.jpg"/></a>
+            <a href="http://www.drmartens.com/de/"><img src="./vendors/martens.jpg"/></a>
+            <a href="www.tamaris.de"><img src="./vendors/tamaris.jpg"/></a>
+        </div>
+        <div class="vendor-view hohe-store">
+            <h2>Hohestrasse</h2>
+            <a href="http://www.deichmann.com/DE/de/shop/damen/damen-schuhe.cat"><img src="./vendors/deichmann.jpg"/></a>
+            <a href="http://www.kaempgen.de/"><img src="./vendors/kampgen.jpg"/></a>
+            <a href="http://www.jumex.de/ueber-uns"><img src="./vendors/lumex.jpg"/></a>
+        </div>
+    </div>
+    <script>
+      function initMap() {
+        // Create a map object and specify the DOM element for display.
+        var markers = [];
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 52.501161, lng: 13.421166},
+            scrollwheel: false,
+            disableDefaultUI: true,
+            zoom: 13,
+            styles: [{"featureType":"all","elementType":"labels.text.fill","stylers":[{"saturation":36},{"color":"#000000"},{"lightness":40}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"visibility":"on"},{"color":"#000000"},{"lightness":16}]},{"featureType":"all","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"lightness":20}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"lightness":17},{"weight":1.2}]},{"featureType":"administrative","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"administrative.country","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.country","elementType":"geometry","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.country","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"administrative.locality","elementType":"all","stylers":[{"visibility":"simplified"},{"saturation":"-100"},{"lightness":"30"}]},{"featureType":"administrative.neighborhood","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"administrative.land_parcel","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"visibility":"simplified"},{"gamma":"0.00"},{"lightness":"74"}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":20}]},{"featureType":"landscape.man_made","elementType":"all","stylers":[{"lightness":"3"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":21}]},{"featureType":"road","elementType":"geometry","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"lightness":17}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"lightness":29},{"weight":0.2}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":18}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":16}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":19}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":17}]}]
+        });
+        var iconBackgroundMappings = {
+            "./img/voo.png": "voo-bg.jpg",
+            "./img/kdw.png": "kdw-bg.jpg",
+            "./img/overkill.png": "overkill.bg.jpg",
+            "./img/ehren.png": "ehren-bg.jpg",
+            "./img/hohe.png": "hohe-bg.jpg"
+        }
+        var iconBase = './img/';
+        var icons = {
+          overkill: {
+            icon: iconBase + 'overkill.png'
+          },
+          kdw: {
+            icon: iconBase + 'kdw.png'
+          },
+          voo: {
+            icon: iconBase + 'voo.png'
+          },
+          hohe: {
+            icon: iconBase + 'hohe.png'
+          },
+          ehren: {
+            icon: iconBase + 'ehren.png'
+          }
+        };
+
+        function addMarker(compititor) {
+          var marker = new google.maps.Marker({
+            position: compititor.position,
+            icon: icons[compititor.type].icon,
+            map: map
+          });
+          markers.push(marker);
+        }
+
+        var compititor = [
+          {
+            position: new google.maps.LatLng(52.501602, 13.34993),
+            type: 'kdw',
+          }, {
+            position: new google.maps.LatLng(52.501307, 13.441248),
+            type: 'overkill'
+          }, {
+            position: new google.maps.LatLng(52.501161, 13.421166),
+            type: 'voo'
+          }, {
+            position: new google.maps.LatLng(50.934515, 6.956163),
+            type: 'hohe'
+          }, 
+          {
+            position: new google.maps.LatLng(50.938296, 6.942371),
+            type: 'ehren'
+          }, 
+        ];
+
+        /*for (var i = 0, compititor; compititor = compititor[i]; i++) {
+            addMarker(compititor);
+        }*/
+        addMarker(compititor[0]);
+        addMarker(compititor[1]);
+        addMarker(compititor[2]);
+        addMarker(compititor[3]);
+        addMarker(compititor[4]);
+
+        jQuery('.switcher').on('click', function() {
+            var lat = jQuery(this).data('lat');
+            var lon = jQuery(this).data('lon');
+            map.setCenter(new google.maps.LatLng(lat, lon));
+            map.setZoom(jQuery(this).data('zoom'));
+        });
+        jQuery.each(markers, function() {
+            google.maps.event.addListener(this, 'click', function() {
+                jQuery('#overlay').css('background-image', 'url(' + iconBackgroundMappings[this.icon] + ')');
+                jQuery('#overlay').addClass('show-overlay');
+                console.log(this.icon);
+                jQuery('.vendor-view').hide();
+                if (this.icon === './img/kdw.png') {
+                    jQuery('.kdw-damm').show();
+                }
+                if (this.icon === './img/voo.png') {
+                    jQuery('.hakischer').show();
+                }
+                if (this.icon === './img/overkill.png') {
+                    jQuery('.kreuzberg').show();
+                }
+                if (this.icon === './img/ehren.png') {
+                    jQuery('.ehren-store').show();
+                }
+                 if (this.icon === './img/hohe.png') {
+                    jQuery('.hohe-store').show();
+                }
+            });
+        });
+      }
+
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLwUZfi3D1zS3CdoNPWevS4sN8U5LycWQ&callback=initMap"
+    async defer></script>
+    <script language="javascript" type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('#map').css('height', (jQuery(document).height() - 8));
+            jQuery('#closeOverlay').on('click', function(event) {
+                jQuery('#overlay').removeClass('show-overlay');
+            });
+        });
+    </script>
+  </body>
+</html>
